@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metadesign Visual - Parametros</title>
+    <title>Metadesign Visual Aprimorado</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -61,8 +61,7 @@
     <div class="max-w-4xl w-full bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-8">
         <h1 class="text-3xl sm:text-4xl font-bold text-center text-blue-700 mb-4">Metadesign Visual Aprimorado</h1>
         <p class="text-base sm:text-lg text-center mb-6 leading-relaxed">
-            O metadesign compreende projetar o processo de design em si, ou criar sistemas que permitem que o design emerja.
-            Neste aplicativo, você pode ajustar os parâmetros e ver como diferentes configurações levam a diferentes resultados visuais.
+            Neste aplicativo, você pode ajustar os parâmetros (o "metadesign") e ver como diferentes configurações levam a diferentes resultados visuais.
             O sistema que você controla define as possibilidades, não o resultado final exato.
         </p>
     </div>
@@ -130,10 +129,18 @@
             </div>
 
             <div class="mb-4">
+                <label for="rotation-randomness" class="block text-sm font-medium text-gray-700 mb-1">Aleatoriedade (Rotação):</label>
+                <input type="range" id="rotation-randomness" min="0" max="360" value="0" class="w-full">
+                <span id="rotation-randomness-value" class="text-sm text-gray-500">0°</span>
+            </div>
+
+            <div class="mb-4">
                 <label for="size-variation" class="block text-sm font-medium text-gray-700 mb-1">Variação de Tamanho (Centro-Borda):</label>
                 <input type="range" id="size-variation" min="0" max="100" value="0" class="w-full">
                 <span id="size-variation-value" class="text-sm text-gray-500">0%</span>
             </div>
+
+            <!-- Removed hover effect checkbox -->
 
             <div class="mb-4">
                 <label for="background-color" class="block text-sm font-medium text-gray-700 mb-1">Cor de Fundo do Design:</label>
@@ -171,24 +178,14 @@
         const spacingFactorValueSpan = document.getElementById('spacing-factor-value');
         const randomnessInput = document.getElementById('randomness');
         const randomnessValueSpan = document.getElementById('randomness-value');
+        const rotationRandomnessInput = document.getElementById('rotation-randomness');
+        const rotationRandomnessValueSpan = document.getElementById('rotation-randomness-value');
         const sizeVariationInput = document.getElementById('size-variation');
         const sizeVariationValueSpan = document.getElementById('size-variation-value');
+        // Removed hoverEffectEnabledInput
         const backgroundColorInput = document.getElementById('background-color');
         const backgroundColorValueSpan = document.getElementById('background-color-value');
         const designOutput = document.getElementById('design-output');
-
-        // Function to interpolate color between two hex colors
-        function interpolateColor(color1, color2, factor) {
-            const result = color1.slice();
-            for (let i = 1; i < 7; i += 2) {
-                const c1 = parseInt(color1.substr(i, 2), 16);
-                const c2 = parseInt(color2.substr(i, 2), 16);
-                const c = Math.round(c1 + factor * (c2 - c1)).toString(16);
-                result[i] = c.length === 1 ? '0' + c : c;
-                result[i+1] = ''; // Clear the second char as it's part of the pair
-            }
-            return '#' + result.join('');
-        }
 
         // Helper to convert hex to RGB
         function hexToRgb(hex) {
@@ -215,7 +212,6 @@
             return rgbToHex(r, g, b);
         }
 
-
         // Function to generate the SVG elements based on parameters
         function generateDesign() {
             // Clear previous design
@@ -223,7 +219,7 @@
 
             // Get current parameter values
             const gridSize = parseInt(gridSizeInput.value);
-            const baseSize = parseInt(elementSizeInput.value); // Renamed from baseRadius to baseSize for general elements
+            const baseSize = parseInt(elementSizeInput.value);
             const shapeType = shapeTypeSelect.value;
             const colorMode = colorModeSelect.value;
             const solidColor = solidColorInput.value;
@@ -231,7 +227,9 @@
             const gradientEndColor = gradientEndColorInput.value;
             const spacingFactor = parseFloat(spacingFactorInput.value);
             const randomness = parseInt(randomnessInput.value);
+            const rotationRandomness = parseInt(rotationRandomnessInput.value);
             const sizeVariation = parseInt(sizeVariationInput.value);
+            // Removed hoverEffectEnabled
             const backgroundColor = backgroundColorInput.value;
 
             // Update display values
@@ -242,6 +240,7 @@
             gradientEndColorValueSpan.textContent = gradientEndColor;
             spacingFactorValueSpan.textContent = spacingFactor.toFixed(1);
             randomnessValueSpan.textContent = `${randomness}%`;
+            rotationRandomnessValueSpan.textContent = `${rotationRandomness}°`;
             sizeVariationValueSpan.textContent = `${sizeVariation}%`;
             backgroundColorValueSpan.textContent = backgroundColor;
 
@@ -259,7 +258,7 @@
             const containerHeight = designOutput.offsetHeight;
 
             // Calculate the effective cell size based on desired spacing and element size
-            const cellSize = (baseSize * 2 + (baseSize * 2 * (spacingFactor - 1))); // Space needed per element including spacing
+            const cellSize = (baseSize * 2 + (baseSize * 2 * (spacingFactor - 1)));
 
             const svgWidth = Math.max(containerWidth, gridSize * cellSize);
             const svgHeight = Math.max(containerHeight, gridSize * cellSize);
@@ -267,10 +266,10 @@
             // Create SVG element
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-            svg.setAttribute("preserveAspectRatio", "xMidYMid meet"); // Maintain aspect ratio
+            svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
             svg.style.width = '100%';
             svg.style.height = '100%';
-            svg.style.backgroundColor = backgroundColor; // Set SVG background color
+            svg.style.backgroundColor = backgroundColor;
 
             // Calculate offset to center the grid
             const offsetX = (svgWidth - (gridSize * cellSize)) / 2;
@@ -279,7 +278,7 @@
             // Center of the grid for size variation calculation
             const centerX = gridSize / 2;
             const centerY = gridSize / 2;
-            const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY); // Max distance from center to a corner
+            const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
 
             // Generate elements
             for (let i = 0; i < gridSize; i++) {
@@ -291,19 +290,22 @@
                     const distanceX = Math.abs(j - centerX);
                     const distanceY = Math.abs(i - centerY);
                     const currentDistance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-                    const distanceFactor = maxDistance > 0 ? (currentDistance / maxDistance) : 0; // 0 at center, 1 at max distance
+                    const distanceFactor = maxDistance > 0 ? (currentDistance / maxDistance) : 0;
 
                     // Apply size variation based on distance from center
                     let adjustedSize = baseSize * (1 - (sizeVariation / 100) * distanceFactor);
 
                     // Apply randomness to size
                     adjustedSize += (Math.random() * randomness / 100 * baseSize * (Math.random() > 0.5 ? 1 : -1));
-                    adjustedSize = Math.max(0, adjustedSize); // Ensure size is not negative
+                    adjustedSize = Math.max(0, adjustedSize);
+
+                    // Apply randomness to rotation
+                    const randomRotation = (Math.random() * rotationRandomness) * (Math.random() > 0.5 ? 1 : -1);
 
                     let fillColor = solidColor;
                     if (colorMode === 'gradient') {
                         // Interpolate color based on position (e.g., horizontal gradient)
-                        const colorFactor = j / (gridSize - 1); // 0 for first column, 1 for last
+                        const colorFactor = j / (gridSize - 1);
                         fillColor = getInterpolatedColor(gradientStartColor, gradientEndColor, colorFactor);
                     }
 
@@ -317,29 +319,38 @@
                             break;
                         case 'square':
                             element = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                            element.setAttribute("x", cx - adjustedSize); // x, y are top-left corner for rect
+                            element.setAttribute("x", cx - adjustedSize);
                             element.setAttribute("y", cy - adjustedSize);
                             element.setAttribute("width", adjustedSize * 2);
                             element.setAttribute("height", adjustedSize * 2);
-                            element.setAttribute("rx", adjustedSize * 0.2); // Rounded corners for squares
+                            element.setAttribute("rx", adjustedSize * 0.2);
                             element.setAttribute("ry", adjustedSize * 0.2);
                             break;
                         case 'triangle':
                             element = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                            // Calculate points for an equilateral triangle centered at (cx, cy)
-                            const h = adjustedSize * Math.sqrt(3); // Height of equilateral triangle
+                            const h = adjustedSize * Math.sqrt(3);
                             const p1x = cx;
-                            const p1y = cy - (h / 2); // Top point
+                            const p1y = cy - (h / 2);
                             const p2x = cx - adjustedSize;
-                            const p2y = cy + (h / 2); // Bottom-left point
+                            const p2y = cy + (h / 2);
                             const p3x = cx + adjustedSize;
-                            const p3y = cy + (h / 2); // Bottom-right point
+                            const p3y = cy + (h / 2);
                             element.setAttribute("points", `${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`);
                             break;
                     }
 
                     element.setAttribute("fill", fillColor);
+                    // Apply rotation transform
+                    let transformString = "";
+                    if (randomRotation !== 0) {
+                        transformString += `rotate(${randomRotation}, ${cx}, ${cy})`;
+                    }
+                    element.setAttribute("transform", transformString); // Set initial transform
+
                     element.setAttribute("class", "transition-all duration-100 ease-out"); // Smooth transitions for updates
+
+                    // Removed hover effect logic
+                    
                     svg.appendChild(element);
                 }
             }
@@ -357,7 +368,9 @@
         gradientEndColorInput.addEventListener('input', generateDesign);
         spacingFactorInput.addEventListener('input', generateDesign);
         randomnessInput.addEventListener('input', generateDesign);
+        rotationRandomnessInput.addEventListener('input', generateDesign);
         sizeVariationInput.addEventListener('input', generateDesign);
+        // Removed hoverEffectEnabledInput event listener
         backgroundColorInput.addEventListener('input', generateDesign);
 
 
